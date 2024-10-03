@@ -1,10 +1,12 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pos_cashier/common/helper.dart';
+import 'package:pos_cashier/presentation/bloc/cart/cart_bloc.dart';
 import 'package:pos_cashier/presentation/bloc/cashier_category/cashier_category_bloc.dart';
 import 'package:pos_cashier/presentation/bloc/cashier_product/cashier_product_bloc.dart';
 import 'package:pos_cashier/presentation/widget/textfield_custom.dart';
@@ -185,7 +187,11 @@ class _CashierPageState extends State<CashierPage> {
                                     ),
                                     child: InkWell(
                                       onTap: () {
-                                        log('Product Clicked');
+                                        context.read<CartBloc>().add(AddProduct(
+                                            id: e.id ?? 0,
+                                            name: e.name ?? '',
+                                            quantity: 1,
+                                            price: e.price ?? 0));
                                       },
                                       child: Column(
                                         children: [
@@ -281,6 +287,137 @@ class _CashierPageState extends State<CashierPage> {
                               style: const TextStyle(fontSize: 12)),
                           Text("Dilayani oleh: Admin",
                               style: const TextStyle(fontSize: 12))
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: BlocBuilder<CartBloc, CartState>(
+                    builder: (context, state) {
+                      if (state is CartLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (state is CartLoaded) {
+                        return ListView.builder(
+                          itemCount: state.carts.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final cart = state.carts[index];
+                            return Container(
+                              padding: const EdgeInsets.all(10),
+                              margin: const EdgeInsets.symmetric(vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(cart['name'] ?? ''),
+                                        Text(
+                                            '${cart['quantity']} x ${Helper.rupiahFormat(cart['price'])} = ${Helper.rupiahFormat(cart['price_total'])}',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          context.read<CartBloc>().add(
+                                              IncrementProduct(id: cart['id']));
+                                        },
+                                        icon: const Icon(Icons.add),
+                                      ),
+                                      Text(cart['quantity'].toString()),
+                                      IconButton(
+                                        onPressed: () {
+                                          context.read<CartBloc>().add(
+                                              DecrementProduct(id: cart['id']));
+                                        },
+                                        icon: const Icon(Icons.remove),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      context
+                                          .read<CartBloc>()
+                                          .add(RemoveProduct(id: cart['id']));
+                                    },
+                                    icon: const Icon(Icons.delete),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      } else {
+                        return Container();
+                      }
+                    },
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  width: double.infinity,
+                  color: Colors.grey[300],
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Text('Total'),
+                          Spacer(),
+                          BlocBuilder<CartBloc, CartState>(
+                            builder: (context, state) {
+                              if (state is CartLoaded) {
+                                return Text(
+                                    Helper.rupiahFormat(state.total.toInt()));
+                              } else {
+                                return Container();
+                              }
+                            },
+                          )
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                context.read<CartBloc>().add(ClearCart());
+                              },
+                              child: const Text('Batal'),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: () {},
+                                child: const Text('Bayar'),
+                              ),
+                            ),
+                          ),
                         ],
                       )
                     ],

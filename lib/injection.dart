@@ -7,6 +7,7 @@ import 'package:pos_cashier/domain/repositories/repository_domain.dart';
 import 'package:pos_cashier/domain/usecase/get_category.dart';
 import 'package:pos_cashier/domain/usecase/get_login.dart';
 import 'package:pos_cashier/domain/usecase/get_product.dart';
+import 'package:pos_cashier/presentation/bloc/cart/cart_bloc.dart';
 import 'package:pos_cashier/presentation/bloc/cashier_category/cashier_category_bloc.dart';
 import 'package:pos_cashier/presentation/bloc/cashier_product/cashier_product_bloc.dart';
 
@@ -16,6 +17,7 @@ void init() {
   //bloc
   getIt.registerFactory(() => CashierCategoryBloc(getIt()));
   getIt.registerFactory(() => CashierProductBloc(getIt()));
+  getIt.registerFactory(() => CartBloc());
 
   //usecase
   getIt.registerLazySingleton(() => GetLogin(repositoryDomain: getIt()));
